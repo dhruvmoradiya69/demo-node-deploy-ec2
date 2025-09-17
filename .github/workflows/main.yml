@@ -1,1 +1,63 @@
 
+name: Deploy React App to EC2 with rsync
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: |
+          echo "install npm dependencies"
+          npm install
+
+      - name: Set deployment path based on branch
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            echo "Deploying to development environment"
+            echo "REMOTE_PATH=/home/backend/dev" >> $GITHUB_ENV
+            echo "PM2_NAME=backend-dev" >> $GITHUB_ENV
+            echo "ENV=development" >> $GITHUB_ENV
+          else
+            echo "Deploying to main environment"
+            echo "REMOTE_PATH=/home/backend/prod" >> $GITHUB_ENV
+            echo "PM2_NAME=backend-prod" >> $GITHUB_ENV
+            echo "ENV=production" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy with rsync
+        uses: burnett01/rsync-deployments@7.1.0
+        with:
+          switches: -avz --delete --exclude='.env'
+          path: ./
+          remote_path: ${{ env.REMOTE_PATH }}
+          remote_host: ${{ secrets.EC2_HOST }}
+          remote_user: ubuntu
+          remote_key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Reload Nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v22.19.0/bin
+            export NVM=$NVM:/home/ubuntu/.nvm/versions/node/v22.19.0/bin/npm
+            cd ${{ env.REMOTE_PATH }}
+            npm install
+            pm2 restart ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }} || pm2 start ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }}
