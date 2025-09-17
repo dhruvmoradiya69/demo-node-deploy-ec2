@@ -58,5 +58,6 @@ jobs:
           script: |
             export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v22.19.0/bin
             cd ${{ env.REMOTE_PATH }}
+            ls -la
             npm install
             pm2 restart ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }} || pm2 start ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }}
