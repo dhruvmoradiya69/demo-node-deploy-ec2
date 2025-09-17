@@ -30,7 +30,7 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
             echo "Deploying to development environment"
             echo "REMOTE_PATH=/home/backend/dev" >> $GITHUB_ENV
-            echo "PM2_NAME=backedend-dev" >> $GITHUB_ENV
+            echo "PM2_NAME=backend-dev" >> $GITHUB_ENV
             echo "ENV=development" >> $GITHUB_ENV
           else
             echo "Deploying to main environment"
@@ -58,5 +58,5 @@ jobs:
           script: |
             export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v22.19.0/bin
             cd ${{ env.REMOTE_PATH }}
-            # pm2 reload ${{ env.PM2_NAME }} --env ${{ env.ENV }} || pm2 start server.js --name ${{ env.PM2_NAME }} --env ${{ env.ENV }}
-            pm2 reload ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }} || pm2 start ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }}
+            pm2 restart ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }} || pm2 start ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }}
+            pm2 l
