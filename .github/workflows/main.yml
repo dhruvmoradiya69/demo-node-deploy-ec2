@@ -57,7 +57,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v22.19.0/bin
-            # export NVM=$NVM:/home/ubuntu/.nvm/versions/node/v22.19.0/bin/npm
             cd ${{ env.REMOTE_PATH }}
             npm install
             pm2 restart ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }} || pm2 start ecosystem.config.js --only ${{ env.PM2_NAME }} --env ${{ env.ENV }}
