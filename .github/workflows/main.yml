@@ -43,7 +43,7 @@ jobs:
         uses: burnett01/rsync-deployments@7.1.0
         with:
           switches: -avz --delete --exclude='.env'
-          path: ${{ github.workspace }}
+          path: ./
           remote_path: ${{ env.REMOTE_PATH }}
           remote_host: ${{ secrets.EC2_HOST }}
           remote_user: ubuntu
